@@ -1,0 +1,21 @@
+{
+  "name": "pet-shell-tauri",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1 --port 1420 --strictPort",
+    "tauri": "tauri",
+    "tauri:dev": "tauri dev",
+    "build": "vite build",
+    "tauri:build": "tauri build"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "2.11.0",
+    "@tauri-apps/plugin-dialog": "2.7.1"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "2.11.2",
+    "vite": "^7.1.12"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Allow the main desktop-pet window to drag, close, and show its native context menu.",
+  "windows": ["main"],
+  "permissions": [
+    "core:window:allow-start-dragging",
+    "core:window:allow-close",
+    "core:window:allow-set-size",
+    "core:menu:allow-new",
+    "core:menu:allow-popup",
+    "core:resources:allow-close",
+    "dialog:default",
+    "dialog:allow-open"
+  ]
+}

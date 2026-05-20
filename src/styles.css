@@ -1,0 +1,134 @@
+:root {
+  font-family:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  color: #f8fafc;
+  background: transparent;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: transparent;
+}
+
+body {
+  display: grid;
+  place-items: center;
+  /* 桌宠窗口主要靠拖动交互，避免选中文本影响手感。 */
+  user-select: none;
+}
+
+button {
+  font: inherit;
+}
+
+#pet-root {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100vw;
+  height: 100vh;
+  /* 透明背景要一路从窗口、body、根容器保持一致。 */
+  background: transparent;
+}
+
+#pet-canvas {
+  display: block;
+  image-rendering: auto;
+  cursor: grab;
+  /* 轻微阴影只贴在宠物像素外轮廓上，不额外画背景卡片。 */
+  filter: drop-shadow(0 12px 18px rgb(15 23 42 / 0.22));
+  transform-origin: 50% 82%;
+}
+
+#pet-canvas:active {
+  cursor: grabbing;
+}
+
+#pet-canvas.is-changing {
+  filter: drop-shadow(0 16px 22px rgb(15 23 42 / 0.24));
+}
+
+#resize-handle {
+  position: fixed;
+  right: 8px;
+  bottom: 8px;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 58% 58%, rgb(255 255 255 / 0.82) 0 22%, transparent 23%),
+    radial-gradient(circle at 72% 72%, rgb(255 255 255 / 0.48) 0 18%, transparent 19%),
+    rgb(15 23 42 / 0.36);
+  box-shadow:
+    0 0 0 1px rgb(15 23 42 / 0.2),
+    0 6px 14px rgb(15 23 42 / 0.18);
+  cursor: nwse-resize;
+  opacity: 0.18;
+  transition:
+    opacity 120ms ease,
+    transform 120ms ease,
+    background 120ms ease;
+}
+
+#resize-handle:hover,
+#resize-handle:focus-visible,
+body[data-resizing="true"] #resize-handle {
+  opacity: 0.78;
+  transform: scale(1.08);
+  outline: none;
+}
+
+#state-menu {
+  /* 状态入口改到右键菜单，底部按钮只保留在 DOM 里供逻辑复用，不再 hover 显示。 */
+  display: none;
+}
+
+#state-menu button {
+  min-width: 38px;
+  height: 26px;
+  padding: 0 7px;
+  border: 0;
+  border-radius: 6px;
+  color: rgb(226 232 240 / 0.86);
+  background: transparent;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    color 120ms ease,
+    background 120ms ease,
+    transform 120ms ease;
+}
+
+#state-menu button:hover,
+#state-menu button:focus-visible {
+  background: rgb(255 255 255 / 0.1);
+  transform: translateY(-1px);
+  outline: none;
+}
+
+#state-menu button.active {
+  color: #0f172a;
+  background: #f8fafc;
+  transform: translateY(-1px);
+}
+
+body[data-error="true"]::before {
+  content: attr(data-error-message);
+  max-width: 260px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  color: #fecaca;
+  background: rgb(127 29 29 / 0.86);
+  font-size: 13px;
+  line-height: 1.4;
+  text-align: center;
+}
