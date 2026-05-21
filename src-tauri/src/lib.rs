@@ -89,6 +89,49 @@ fn installed_pet_from_dir(dir: PathBuf) -> Result<InstalledPet, String> {
     })
 }
 
+fn package_dir_name(manifest: &PetManifest) -> String {
+    manifest
+        .display_name
+        .as_deref()
+        .unwrap_or(&manifest.id)
+        .chars()
+        .map(|character| match character {
+            '<' | '>' | ':' | '"' | '/' | '\\' | '|' | '?' | '*' => '-',
+            _ => character,
+        })
+        .collect::<String>()
+        .trim()
+        .trim_matches('.')
+        .to_string()
+}
+
+fn unique_target_dir(root: &Path, manifest: &PetManifest) -> PathBuf {
+    let base_name = {
+        let name = package_dir_name(manifest);
+
+        if name.is_empty() {
+            manifest.id.clone()
+        } else {
+            name
+        }
+    };
+    let mut target_dir = root.join(&base_name);
+
+    if !target_dir.exists() {
+        return target_dir;
+    }
+
+    for index in 2.. {
+        target_dir = root.join(format!("{base_name}-{index}"));
+
+        if !target_dir.exists() {
+            return target_dir;
+        }
+    }
+
+    unreachable!("unique target directory search should always return")
+}
+
 #[tauri::command]
 fn install_pet_package(app: AppHandle, package_dir: String) -> Result<InstalledPet, String> {
     let source_dir = PathBuf::from(package_dir);
@@ -108,12 +151,8 @@ fn install_pet_package(app: AppHandle, package_dir: String) -> Result<InstalledP
         ));
     }
 
-    let target_dir = pets_dir(&app)?.join(&manifest.id);
-
-    if target_dir.exists() {
-        fs::remove_dir_all(&target_dir)
-            .map_err(|error| format!("无法覆盖旧宠物目录: {error}"))?;
-    }
+    let root = pets_dir(&app)?;
+    let target_dir = unique_target_dir(&root, &manifest);
 
     copy_dir_all(&source_dir, &target_dir)?;
     installed_pet_from_dir(target_dir)

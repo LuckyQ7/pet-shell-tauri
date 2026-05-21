@@ -129,6 +129,26 @@ function installedPetToOption(pet) {
   };
 }
 
+function isSamePet(left, right) {
+  if (left.source !== right.source || left.id !== right.id) {
+    return false;
+  }
+
+  if (left.source === "installed") {
+    return left.petJsonPath === right.petJsonPath;
+  }
+
+  return left.rootPath === right.rootPath;
+}
+
+function petMenuItem(pet, index) {
+  return {
+    id: `pet-${pet.source}-${index}`,
+    text: isSamePet(pet, activePet) ? `✓ ${pet.displayName}` : pet.displayName,
+    action: () => switchPet(pet).catch(showError)
+  };
+}
+
 async function refreshInstalledPets() {
   const pets = await invoke("list_installed_pets");
   installedPets = pets.map(installedPetToOption);
@@ -419,11 +439,7 @@ async function installPetPackage() {
 
 async function setupContextMenu() {
   // 右键菜单走系统原生菜单，在 Windows 和 macOS 上都会使用对应平台样式。
-  const petItems = installedPets.map((pet) => ({
-    id: `pet-${pet.id}`,
-    text: pet.id === activePet.id ? `✓ ${pet.displayName}` : pet.displayName,
-    action: () => switchPet(pet).catch(showError)
-  }));
+  const petItems = [BUILTIN_PET, ...installedPets].map(petMenuItem);
   const speedItems = SPEED_OPTIONS.map((option) => ({
     id: `speed-${option.id}`,
     text:
@@ -452,7 +468,8 @@ async function setupContextMenu() {
       text: "安装宠物资源包...",
       action: () => installPetPackage().catch(showError)
     },
-    ...(petItems.length > 0 ? [{ item: "Separator" }, ...petItems] : []),
+    { item: "Separator" },
+    ...petItems,
     { item: "Separator" },
     {
       id: "quit",
