@@ -1,4 +1,4 @@
-import { invoke } from "@tauri-apps/api/core";
+import { convertFileSrc, invoke } from "@tauri-apps/api/core";
 import { Menu } from "@tauri-apps/api/menu";
 import { getCurrentWindow, LogicalSize } from "@tauri-apps/api/window";
 import { open } from "@tauri-apps/plugin-dialog";
@@ -113,6 +113,10 @@ function resourceUrl(path) {
   return new URL(path, window.location.href).href;
 }
 
+function installedResourceUrl(path) {
+  return convertFileSrc(path);
+}
+
 function installedPetToOption(pet) {
   return {
     id: pet.id,
@@ -134,9 +138,11 @@ async function loadPet(pet = activePet) {
   // pet.json 只保存宠物元信息和图集相对路径，真正的动画帧都在 spritesheet 里。
   const petJsonUrl =
     pet.source === "installed"
-      ? `asset://localhost/${pet.petJsonPath}`
+      ? installedResourceUrl(pet.petJsonPath)
       : resourceUrl(`${pet.rootPath}/pet.json`);
-  const response = await fetch(petJsonUrl);
+  const response = await fetch(petJsonUrl).catch((error) => {
+    throw new Error(`无法读取宠物配置: ${error.message} ${petJsonUrl}`);
+  });
 
   if (!response.ok) {
     throw new Error(`无法读取宠物配置: ${response.status} ${petJsonUrl}`);
@@ -146,12 +152,14 @@ async function loadPet(pet = activePet) {
 
   const spritesheetUrl =
     pet.source === "installed"
-      ? `asset://localhost/${pet.spritesheetPath}`
+      ? installedResourceUrl(pet.spritesheetPath)
       : resourceUrl(`${pet.rootPath}/${petConfig.spritesheetPath}`);
   const nextSpritesheet = new Image();
 
   nextSpritesheet.src = spritesheetUrl;
-  await nextSpritesheet.decode();
+  await nextSpritesheet.decode().catch((error) => {
+    throw new Error(`无法读取宠物图集: ${error.message} ${spritesheetUrl}`);
+  });
 
   activePet = {
     ...pet,
